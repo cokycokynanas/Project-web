@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coding Boysz - Form</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="container">
+        <form class="form-card" id="telegramForm">
+            <h1>Welcome to <span>Coding Boysz</span></h1>
+            <p class="subtitle">Silakan isi data diri kamu di bawah ini.</p>
+
+            <div class="input-group">
+                <label>Nama Lengkap</label>
+                <input type="text" id="nama" placeholder="Contoh: Budi Santoso" required>
+            </div>
+
+            <div class="input-group">
+                <label>Tanggal Lahir</label>
+                <input type="date" id="tgl_lahir" required>
+            </div>
+
+            <div class="input-group">
+                <label>Nomor WhatsApp</label>
+                <input type="tel" id="whatsapp" placeholder="0812xxxxxx" required>
+            </div>
+
+            <div class="input-group">
+                <label>Email Aktif</label>
+                <input type="email" id="email" placeholder="nama@gmail.com" required>
+            </div>
+
+            <button type="submit" class="btn-submit" id="btnKirim">Kirim Data</button>
+        </form>
+    </div>
+
+    <script>
+        const token = "8526195679:AAH--icxmjSatH2vj3AIbUDC-5mw6bwH6i0";
+        const chatId = "358455215";
+
+        document.getElementById('telegramForm').addEventListener('submit', function(e) {
+            e.preventDefault(); // Mencegah halaman refresh
+
+            const btn = document.getElementById('btnKirim');
+            btn.innerHTML = "Sedang Mengirim...";
+            btn.disabled = true;
+
+            // Ambil data dari input
+            const nama = document.getElementById('nama').value;
+            const tgl = document.getElementById('tgl_lahir').value;
+            const wa = document.getElementById('whatsapp').value;
+            const email = document.getElementById('email').value;
+
+            // Susun pesan untuk Telegram
+            const pesan = `
+<b>🚀 ADA DATA MASUK BARU!</b>
+------------------------------
+<b>👤 Nama:</b> ${nama}
+<b>📅 Tgl Lahir:</b> ${tgl}
+<b>📞 WhatsApp:</b> ${wa}
+<b>📧 Email:</b> ${email}
+------------------------------
+<i>Dikirim dari Web Coding Boysz</i>
+            `;
+
+            // Kirim ke API Telegram
+            const url = `https://api.telegram.org/bot${token}/sendMessage`;
+
+            fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: chatId,
+                    text: pesan,
+                    parse_mode: 'html' // Supaya teks tebal/miring berfungsi
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.ok) {
+                    alert("✅ Data berhasil dikirim ke Owner @boyeszzz!");
+                    document.getElementById('telegramForm').reset(); // Kosongkan form
+                } else {
+                    alert("❌ Gagal mengirim data. Cek Token/ID.");
+                }
+            })
+            .catch(err => {
+                alert("❌ Terjadi kesalahan jaringan.");
+            })
+            .finally(() => {
+                btn.innerHTML = "Kirim Data";
+                btn.disabled = false;
+            });
+        });
+    </script>
+</body>
+</html>
